@@ -76,68 +76,11 @@ async function handleChatRequest(
         stream: true,
       },
       {
-        // Uncomment to use AI Gateway
-        // gateway: {
-        //   id: "YOUR_GATEWAY_ID", // Replace with your AI Gateway ID
-        //   skipCache: false,      // Set to true to bypass cache
-        //   cacheTtl: 3600,        // Cache time-to-live in seconds
-        // },
+        returnRawResponse: true,
       },
     );
 
-    // Transform streaming response to SSE format
-    const encoder = new TextEncoder();
-    const readableStream = new ReadableStream({
-      async start(controller) {
-        const reader = aiResponse.body.getReader();
-        const decoder = new TextDecoder();
-
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split("\n");
-
-            for (const line of lines) {
-              if (line.trim() === "" || !line.startsWith("data: ")) continue;
-              
-              try {
-                const jsonStr = line.replace("data: ", "");
-                const data = JSON.parse(jsonStr);
-                let content = "";
-
-                // Handle different response formats
-                if (data.choices?.[0]?.delta?.content) {
-                  content = data.choices[0].delta.content;
-                } else if (data.response) {
-                  content = data.response;
-                }
-
-                if (content) {
-                  controller.enqueue(
-                    encoder.encode(JSON.stringify({ response: content }) + "\n")
-                  );
-                }
-              } catch (e) {
-                // Skip invalid JSON lines
-              }
-            }
-          }
-        } finally {
-          controller.close();
-        }
-      },
-    });
-
-    return new Response(readableStream, {
-      headers: {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
-      },
-    });
+    return aiResponse;
   } catch (error) {
     console.error("Error processing chat request:", error);
     return new Response(

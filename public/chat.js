@@ -94,6 +94,7 @@ async function sendMessage() {
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let responseText = "";
+    let buffer = "";
 
     while (true) {
       const { done, value } = await reader.read();
@@ -102,24 +103,37 @@ async function sendMessage() {
         break;
       }
 
-      // Decode chunk
-      const chunk = decoder.decode(value, { stream: true });
+      // Decode chunk and add to buffer
+      buffer += decoder.decode(value, { stream: true });
 
       // Process SSE format
-      const lines = chunk.split("\n");
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || ""; // Keep incomplete line in buffer
+
       for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        
         try {
-          const jsonData = JSON.parse(line);
-          if (jsonData.response) {
+          const jsonStr = line.replace("data: ", "");
+          const jsonData = JSON.parse(jsonStr);
+          
+          let content = "";
+          if (jsonData.choices?.[0]?.delta?.content) {
+            content = jsonData.choices[0].delta.content;
+          } else if (jsonData.response) {
+            content = jsonData.response;
+          }
+
+          if (content) {
             // Append new content to existing text
-            responseText += jsonData.response;
+            responseText += content;
             assistantMessageEl.querySelector("p").textContent = responseText;
 
             // Scroll to bottom
             chatMessages.scrollTop = chatMessages.scrollHeight;
           }
         } catch (e) {
-          console.error("Error parsing JSON:", e);
+          console.error("Error parsing JSON:", e, line);
         }
       }
     }

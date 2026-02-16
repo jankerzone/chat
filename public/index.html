@@ -154,12 +154,43 @@
         cursor: pointer;
         user-select: none;
       }
+
+      .model-selector {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+        color: var(--text-color);
+      }
+
+      .model-selector select {
+        padding: 0.4rem 0.8rem;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        background-color: white;
+        font-family: inherit;
+        cursor: pointer;
+        max-width: 300px;
+      }
     </style>
   </head>
   <body>
     <header>
       <h1>Jankerzone AI Chat</h1>
       <p>Powered by Cloudflare Workers AI</p>
+      <div class="model-selector">
+        <select id="model-select">
+          <option value="@cf/openai/gpt-oss-120b">GPT-OSS 120B (Reasoning)</option>
+          <option value="@cf/openai/gpt-oss-20b">GPT-OSS 20B (Fast)</option>
+          <option value="@cf/meta/llama-3.3-70b-instruct-fp8-fast">Llama 3.3 70B (Fast)</option>
+          <option value="@cf/meta/llama-3.1-8b-instruct-fast">Llama 3.1 8B (Fast)</option>
+          <option value="@cf/google/gemma-3-12b-it">Gemma 3 12B</option>
+          <option value="@cf/qwen/qwq-32b">QwQ 32B (Reasoning)</option>
+          <option value="@cf/deepseek-ai/deepseek-r1-distill-qwen-32b">DeepSeek R1 32B (Reasoning)</option>
+          <option value="@cf/qwen/qwen3-30b-a3b-fp8">Qwen3 30B</option>
+        </select>
+      </div>
       <div class="thinking-toggle">
         <input type="checkbox" id="thinking-mode" />
         <label for="thinking-mode">Enable Thinking Mode</label>

@@ -59,9 +59,10 @@ async function handleChatRequest(
 ): Promise<Response> {
   try {
     // Parse JSON request body
-    const { messages = [], thinkingMode = false } = (await request.json()) as {
+    const { messages = [], thinkingMode = false, model = MODEL_ID } = (await request.json()) as {
       messages: ChatMessage[];
       thinkingMode?: boolean;
+      model?: string;
     };
 
     // Add system prompt if not present
@@ -87,7 +88,7 @@ async function handleChatRequest(
     }
 
     const aiResponse = await env.AI.run(
-      MODEL_ID,
+      model,
       aiParams,
       {
         returnRawResponse: true,

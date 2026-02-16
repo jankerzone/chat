@@ -10,6 +10,7 @@ const userInput = document.getElementById("user-input");
 const sendButton = document.getElementById("send-button");
 const typingIndicator = document.getElementById("typing-indicator");
 const thinkingModeCheckbox = document.getElementById("thinking-mode");
+const modelSelect = document.getElementById("model-select");
 
 // Chat state
 let chatHistory = [
@@ -84,6 +85,7 @@ async function sendMessage() {
       body: JSON.stringify({
         messages: chatHistory,
         thinkingMode: thinkingModeCheckbox.checked,
+        model: modelSelect.value,
       }),
     });
 

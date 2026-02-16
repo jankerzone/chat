@@ -129,7 +129,7 @@ async function sendMessage() {
           if (content) {
             // Append new content to existing text
             responseText += content;
-            assistantMessageEl.querySelector("p").textContent = responseText;
+            assistantMessageEl.querySelector("p").innerHTML = marked.parse(responseText);
 
             // Scroll to bottom
             chatMessages.scrollTop = chatMessages.scrollHeight;

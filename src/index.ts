@@ -59,22 +59,36 @@ async function handleChatRequest(
 ): Promise<Response> {
   try {
     // Parse JSON request body
-    const { messages = [] } = (await request.json()) as {
+    const { messages = [], thinkingMode = false } = (await request.json()) as {
       messages: ChatMessage[];
+      thinkingMode?: boolean;
     };
 
     // Add system prompt if not present
     if (!messages.some((msg) => msg.role === "system")) {
-      messages.unshift({ role: "system", content: SYSTEM_PROMPT });
+      {
+        messages.unshift({ role: "system", content: SYSTEM_PROMPT });
+      }
+    }
+
+    // Build AI request parameters
+    const aiParams: any = {
+      messages,
+      max_tokens: 1024,
+      stream: true,
+    };
+
+    // Add reasoning parameters if thinking mode is enabled
+    if (thinkingMode) {
+      aiParams.reasoning = {
+        effort: "high",
+        summary: "detailed",
+      };
     }
 
     const aiResponse = await env.AI.run(
       MODEL_ID,
-      {
-        messages,
-        max_tokens: 1024,
-        stream: true,
-      },
+      aiParams,
       {
         returnRawResponse: true,
       },

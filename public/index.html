@@ -134,12 +134,36 @@
         font-size: 0.85rem;
         color: var(--text-light);
       }
+
+      .thinking-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+        color: var(--text-color);
+      }
+
+      .thinking-toggle input[type="checkbox"] {
+        width: 1.2rem;
+        height: 1.2rem;
+        cursor: pointer;
+      }
+
+      .thinking-toggle label {
+        cursor: pointer;
+        user-select: none;
+      }
     </style>
   </head>
   <body>
     <header>
       <h1>Jankerzone AI Chat</h1>
       <p>Powered by Cloudflare Workers AI</p>
+      <div class="thinking-toggle">
+        <input type="checkbox" id="thinking-mode" />
+        <label for="thinking-mode">Enable Thinking Mode</label>
+      </div>
     </header>
 
     <div class="chat-container">

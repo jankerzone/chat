@@ -73,9 +73,9 @@ async function handleChatRequest(
       {
         messages,
         max_tokens: 1024,
+        stream: true,
       },
       {
-        returnRawResponse: true,
         // Uncomment to use AI Gateway
         // gateway: {
         //   id: "YOUR_GATEWAY_ID", // Replace with your AI Gateway ID
@@ -85,8 +85,58 @@ async function handleChatRequest(
       },
     );
 
-    // Return streaming response
-    return response;
+    // Transform streaming response to SSE format
+    const encoder = new TextEncoder();
+    const readableStream = new ReadableStream({
+      async start(controller) {
+        const reader = response.getReader();
+        const decoder = new TextDecoder();
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split("\n");
+
+            for (const line of lines) {
+              if (line.trim() === "") continue;
+              
+              try {
+                const data = JSON.parse(line);
+                let content = "";
+
+                // Handle different response formats
+                if (data.choices?.[0]?.delta?.content) {
+                  content = data.choices[0].delta.content;
+                } else if (data.response) {
+                  content = data.response;
+                }
+
+                if (content) {
+                  controller.enqueue(
+                    encoder.encode(JSON.stringify({ response: content }) + "\n")
+                  );
+                }
+              } catch (e) {
+                // Skip invalid JSON lines
+              }
+            }
+          }
+        } finally {
+          controller.close();
+        }
+      },
+    });
+
+    return new Response(readableStream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      },
+    });
   } catch (error) {
     console.error("Error processing chat request:", error);
     return new Response(

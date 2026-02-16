@@ -68,7 +68,7 @@ async function handleChatRequest(
       messages.unshift({ role: "system", content: SYSTEM_PROMPT });
     }
 
-    const response = await env.AI.run(
+    const aiResponse = await env.AI.run(
       MODEL_ID,
       {
         messages,
@@ -89,7 +89,7 @@ async function handleChatRequest(
     const encoder = new TextEncoder();
     const readableStream = new ReadableStream({
       async start(controller) {
-        const reader = response.getReader();
+        const reader = aiResponse.body.getReader();
         const decoder = new TextDecoder();
 
         try {
@@ -101,10 +101,11 @@ async function handleChatRequest(
             const lines = chunk.split("\n");
 
             for (const line of lines) {
-              if (line.trim() === "") continue;
+              if (line.trim() === "" || !line.startsWith("data: ")) continue;
               
               try {
-                const data = JSON.parse(line);
+                const jsonStr = line.replace("data: ", "");
+                const data = JSON.parse(jsonStr);
                 let content = "";
 
                 // Handle different response formats
